@@ -1,0 +1,367 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #f4f7fa;
+  color: #212529;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.navbar {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 76px;
+  padding: 0 20px;
+  background: #2c3e50;
+  box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+}
+
+.brand-button {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.iitm-logo {
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+  object-fit: contain;
+}
+
+.brand-text {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  margin-left: auto;
+}
+
+.nav-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.nav-action:hover {
+  color: #d7e8ff;
+}
+
+.nav-icon {
+  width: 19px;
+  height: 19px;
+  color: currentColor;
+  stroke-width: 3;
+}
+
+.filled-icon {
+  fill: currentColor;
+}
+
+main {
+  min-height: 100vh;
+}
+
+.loading-space {
+  min-height: 100vh;
+}
+
+.auth-callback {
+  min-height: 100vh;
+  background: #f4f7fa;
+}
+
+.login-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.login-container footer {
+  margin-top: 36px;
+  color: #7f8c8d;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.google-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 290px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-decoration: none;
+}
+
+.google-login-button img {
+  display: block;
+  width: 290px;
+  height: auto;
+  object-fit: contain;
+}
+
+.google-login-button:hover img {
+  opacity: 0.82;
+}
+
+.google-login-button:disabled {
+  cursor: default;
+}
+
+.google-login-button:disabled img {
+  opacity: 0.65;
+}
+
+.course-container {
+  width: min(100% - 64px, 1268px);
+  margin: 0 auto;
+  padding: 108px 0 60px;
+}
+
+.info-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  margin-bottom: 19px;
+  border: 1px solid #bee5eb;
+  border-radius: 4px;
+  background: #d1ecf1;
+  color: #0c5460;
+  font-size: 18px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.score-table th,
+.score-table td {
+  border: 1px solid #d9dde2;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.course-table {
+  margin-top: 18px;
+}
+
+.course-table th {
+  height: 58px;
+  background: #343a40;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.course-table th:nth-child(1) {
+  width: 31%;
+}
+
+.course-table th:nth-child(2) {
+  width: 26.5%;
+}
+
+.course-table th:nth-child(3) {
+  width: 17.5%;
+}
+
+.course-table th:nth-child(4) {
+  width: 17%;
+}
+
+.course-table th:nth-child(5) {
+  width: 8%;
+}
+
+.course-table td {
+  height: 64px;
+  background: #e6e8eb;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.view-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 36px;
+  border: 0;
+  border-radius: 4px;
+  background: #17a2b8;
+  color: #ffffff;
+}
+
+.view-button:hover {
+  background: #138496;
+}
+
+.detail-container {
+  padding: 124px 46px 92px;
+}
+
+.detail-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.detail-table {
+  min-width: 1300px;
+}
+
+.detail-table th {
+  height: 58px;
+  background: #e3e7ec;
+  color: #4a525b;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.detail-table td {
+  height: 56px;
+  background: #f4f7fa;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.detail-table .highlight-row td {
+  background: #e0e3e6;
+}
+
+.col-serial {
+  width: 6%;
+}
+
+.col-question {
+  width: 12.3%;
+}
+
+.col-type {
+  width: 11.8%;
+}
+
+.col-result {
+  width: 6.4%;
+}
+
+.col-score {
+  width: 6%;
+}
+
+.col-selected {
+  width: 12.9%;
+}
+
+.col-correct {
+  width: 12.2%;
+}
+
+.col-mark {
+  width: 5.5%;
+}
+
+.col-modification {
+  width: 18.6%;
+}
+
+.col-remarks {
+  width: 8%;
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    height: 70px;
+    padding: 0 14px;
+  }
+
+  .iitm-logo {
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+  }
+
+  .brand-text {
+    font-size: 20px;
+  }
+
+  .navbar-links {
+    gap: 16px;
+  }
+
+  .nav-action {
+    font-size: 16px;
+  }
+
+  .course-container {
+    width: calc(100% - 24px);
+    padding-top: 96px;
+  }
+
+  .course-table {
+    min-width: 850px;
+  }
+
+  .detail-container {
+    padding: 96px 12px 60px;
+  }
+}
