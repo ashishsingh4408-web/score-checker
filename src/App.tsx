@@ -5,16 +5,50 @@ import {
   useSignIn,
 } from '@clerk/react'
 import { Eye, Home, LogOut } from 'lucide-react'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { courseScores, scoreRowsByCourse } from './data'
 
 type AppProps = {
   clerkEnabled: boolean
 }
 
-type Navigate = (path: string) => void
+type NavigateOptions = {
+  replace?: boolean
+  scroll?: boolean
+}
 
-const currentBrowserPath = () => `${window.location.pathname}${window.location.search}` || '/view_score'
+type Navigate = (path: string, options?: NavigateOptions) => void
+
+const APP_HOME_PATH = '/course_wise'
+const LOGIN_PATH = '/'
+const SSO_CALLBACK_PATH = '/sso-callback'
+const CLERK_HANDSHAKE_PARAM = '__clerk_handshake'
+
+const currentBrowserPath = () => `${window.location.pathname}${window.location.search}` || LOGIN_PATH
+
+const routePathFrom = (path: string) => {
+  const routePath = path.split('?')[0] || LOGIN_PATH
+  return routePath === LOGIN_PATH ? routePath : routePath.replace(/\/+$/, '')
+}
+
+const removeClerkHandshakeParam = (path: string) => {
+  const [routePath, rawSearch] = path.split('?')
+
+  if (!rawSearch) {
+    return path
+  }
+
+  const params = new URLSearchParams(rawSearch)
+
+  if (!params.has(CLERK_HANDSHAKE_PARAM)) {
+    return path
+  }
+
+  params.delete(CLERK_HANDSHAKE_PARAM)
+  const search = params.toString()
+
+  return search ? `${routePath}?${search}` : routePath || LOGIN_PATH
+}
 
 function useCurrentPath(): [string, Navigate] {
   const [path, setPath] = useState(currentBrowserPath())
@@ -25,13 +59,19 @@ function useCurrentPath(): [string, Navigate] {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  const navigate = (nextPath: string) => {
+  const navigate = useCallback((nextPath: string, options: NavigateOptions = {}) => {
     if (currentBrowserPath() !== nextPath) {
-      window.history.pushState({}, '', nextPath)
+      if (options.replace) {
+        window.history.replaceState({}, '', nextPath)
+      } else {
+        window.history.pushState({}, '', nextPath)
+      }
     }
     setPath(nextPath)
-    window.scrollTo({ top: 0, left: 0 })
-  }
+    if (options.scroll !== false) {
+      window.scrollTo({ top: 0, left: 0 })
+    }
+  }, [])
 
   return [path, navigate]
 }
@@ -48,13 +88,26 @@ export default function App({ clerkEnabled }: AppProps) {
 
 function ClerkApp({ path, navigate }: { path: string; navigate: Navigate }) {
   const { isLoaded, isSignedIn } = useAuth()
+  const routePath = routePathFrom(path)
 
-  if (path === '/sso-callback') {
+  useEffect(() => {
+    if (!isLoaded) {
+      return
+    }
+
+    const cleanPath = removeClerkHandshakeParam(path)
+
+    if (cleanPath !== path) {
+      navigate(cleanPath, { replace: true, scroll: false })
+    }
+  }, [isLoaded, navigate, path])
+
+  if (routePath === SSO_CALLBACK_PATH) {
     return (
       <div className="auth-callback">
         <AuthenticateWithRedirectCallback
-          signInForceRedirectUrl="/course_wise"
-          signUpForceRedirectUrl="/course_wise"
+          signInForceRedirectUrl={APP_HOME_PATH}
+          signUpForceRedirectUrl={APP_HOME_PATH}
         />
       </div>
     )
@@ -85,7 +138,7 @@ function ClerkApp({ path, navigate }: { path: string; navigate: Navigate }) {
 
 function PreviewApp({ path, navigate }: { path: string; navigate: Navigate }) {
   const [signedIn, setSignedIn] = useState(
-    path.startsWith('/course_wise') ||
+    routePathFrom(path) === APP_HOME_PATH ||
       new URLSearchParams(window.location.search).get('preview') === 'signed-in',
   )
 
@@ -95,7 +148,7 @@ function PreviewApp({ path, navigate }: { path: string; navigate: Navigate }) {
         <LoginPage
           onPreviewLogin={() => {
             setSignedIn(true)
-            navigate('/course_wise')
+            navigate(APP_HOME_PATH)
           }}
         />
       </PageShell>
@@ -107,7 +160,7 @@ function PreviewApp({ path, navigate }: { path: string; navigate: Navigate }) {
       navigate={navigate}
       onPreviewLogout={() => {
         setSignedIn(false)
-        navigate('/view_score')
+        navigate(LOGIN_PATH)
       }}
       showNavigation
     >
@@ -130,14 +183,14 @@ function PageShell({
   return (
     <>
       <nav className="navbar" aria-label="Primary">
-        <button className="brand-button" type="button" onClick={() => navigate('/course_wise')}>
+        <button className="brand-button" type="button" onClick={() => navigate(APP_HOME_PATH)}>
           <img alt="IIT Madras Logo" className="iitm-logo" src="/assets/iitm-logo.png" />
           <span className="brand-text">SCORE CHECKER</span>
         </button>
 
         {showNavigation ? (
           <div className="navbar-links">
-            <button className="nav-action" type="button" onClick={() => navigate('/course_wise')}>
+            <button className="nav-action" type="button" onClick={() => navigate(APP_HOME_PATH)}>
               <Home aria-hidden="true" className="nav-icon filled-icon" />
               <span>Home</span>
             </button>
@@ -147,7 +200,7 @@ function PageShell({
                 <span>Logout</span>
               </button>
             ) : (
-              <SignOutButton redirectUrl="/view_score">
+              <SignOutButton redirectUrl={LOGIN_PATH}>
                 <button className="nav-action" type="button">
                   <LogOut aria-hidden="true" className="nav-icon" />
                   <span>Logout</span>
@@ -173,25 +226,45 @@ function LoginPage({ onPreviewLogin }: { onPreviewLogin?: () => void }) {
 
 function ClerkGoogleButton() {
   const { fetchStatus, signIn } = useSignIn()
+  const [authError, setAuthError] = useState('')
 
-  const handleGoogleSignIn = () => {
-    void signIn.sso({
-      redirectCallbackUrl: `${window.location.origin}/sso-callback`,
-      redirectUrl: `${window.location.origin}/course_wise`,
-      strategy: 'oauth_google',
-    })
+  const handleGoogleSignIn = async () => {
+    setAuthError('')
+
+    try {
+      const { error } = await signIn.sso({
+        redirectCallbackUrl: `${window.location.origin}${SSO_CALLBACK_PATH}`,
+        redirectUrl: `${window.location.origin}${APP_HOME_PATH}`,
+        strategy: 'oauth_google',
+      })
+
+      if (error) {
+        console.error(error)
+        setAuthError('Login could not start. Please try again.')
+      }
+    } catch (error) {
+      console.error(error)
+      setAuthError('Login could not start. Please try again.')
+    }
   }
 
   return (
-    <button
-      aria-label="Log in with Google"
-      className="google-login-button"
-      disabled={fetchStatus === 'fetching'}
-      onClick={handleGoogleSignIn}
-      type="button"
-    >
-      <img alt="Log in with Google" src="/assets/google-login.png" />
-    </button>
+    <>
+      <button
+        aria-label="Log in with Google"
+        className="google-login-button"
+        disabled={fetchStatus === 'fetching'}
+        onClick={handleGoogleSignIn}
+        type="button"
+      >
+        <img alt="Log in with Google" src="/assets/google-login.png" />
+      </button>
+      {authError ? (
+        <p className="auth-error" role="alert">
+          {authError}
+        </p>
+      ) : null}
+    </>
   )
 }
 
@@ -209,7 +282,7 @@ function PreviewGoogleButton({ onClick }: { onClick: () => void }) {
 }
 
 function ProtectedRoutes({ path, navigate }: { path: string; navigate: Navigate }) {
-  const routePath = path.split('?')[0]
+  const routePath = routePathFrom(path)
 
   if (routePath === '/view_score') {
     return <ScoreDetailsPage path={path} />

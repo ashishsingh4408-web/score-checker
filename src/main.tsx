@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {publishableKey ? (
       <ClerkProvider
-        afterSignOutUrl="/view_score"
+        afterSignOutUrl="/"
         publishableKey={publishableKey}
         signInForceRedirectUrl="/course_wise"
         signUpForceRedirectUrl="/course_wise"
